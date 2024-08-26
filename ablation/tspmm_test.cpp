@@ -16,7 +16,7 @@
 #include <mma.h>
 
 #include "./include/bm_test_utils.h"
-#include "./include/sspmm.cuh"
+#include "./include/tspmm.cuh"
 
 using namespace std;
 #define repeat 100
@@ -113,99 +113,7 @@ void BmFN(std::string benchmark, int N, int vec_length, int kernel, bool func, b
         checkCuda(cudaMemcpy(d_value, values, nonzeros * sizeof(InType), cudaMemcpyHostToDevice));
         checkCuda(cudaMemcpy(d_rhs_matrix, rhs_matrix, K * N * sizeof(InType), cudaMemcpyHostToDevice));
         // cudaProfilerStart();
-        if (kernel == 0){
-            printf("Using mma884, V = %d\n", vec_length);
-            float total_msec = 0;
-            double Gperf = 0;
-            for(int i = 0; i < repeat+warmup; i++){
-                float msec = 0;
-                cudaEvent_t start;
-                cudaEvent_t end;
-                checkCuda(cudaEventCreate(&start));
-                checkCuda(cudaEventCreate(&end));
-                checkCuda(cudaEventRecord(start));
-
-                spmm::SpMM(m_vec, vec_length, N, K, d_row_indices, d_row_offsets, d_col_indices, d_value, d_rhs_matrix, d_output_value);
-
-                checkCuda(cudaEventRecord(end));
-                checkCuda(cudaEventSynchronize(end));
-                checkCuda(cudaEventElapsedTime(&msec, start, end));
-                if(i >= warmup) {total_msec = total_msec + msec;}
-            }
-
-            Gperf = ((double)nnz) * N * 2 / 1000/ 1000 / total_msec * repeat;//nonzeros
-            double sp = 100.0 - ((double)nnz * 100 / M / K);
-            printf("M = %d, K = %d, N = %d, NNZ = %d, Sparsity = %lf%\n", M, K, N, nnz, sp);
-            printf("\033[33mWMMA on TC Avager Performance = \033[35m%lf\033[0m \033[33mGFlops\033[0m\n", Gperf);
-            // printf("A_size:%d  B_size:%d  C_size:%d\n", sizeof(d_value), sizeof(d_rhs_matrix), sizeof(d_output_value));
-            if(record){
-                std::ofstream outFile;
-            //-------------edit here to change the output file-----------------------------
-                std::string output_dir = "./data/";
-                std::string line;
-                if(vec_length == 8){
-                    line = "_vectorsparse_8_v0.csv";
-                }
-                
-                else if(vec_length == 16){
-                    line = "_vectorsparse_16_v0.csv";
-                }
-                output_dir = output_dir + arch + line;
-
-                outFile.open(output_dir, std::ios::app);
-            //-----------------------------------------------------------------------------
-                outFile << nnz << ',' << N << ',' << Gperf << std::endl;
-                outFile.close();
-            }
-
-        }
-        else if (kernel == 1){
-            printf("Using SSpMM, V = %d\n", vec_length);
-            float total_msec = 0;
-            double Gperf = 0;
-            for(int i = 0; i < repeat+warmup; i++){
-                float msec = 0;
-                cudaEvent_t start;
-                cudaEvent_t end;
-                checkCuda(cudaEventCreate(&start));
-                checkCuda(cudaEventCreate(&end));
-                checkCuda(cudaEventRecord(start));
-                
-                spmm::SSpMM(m_vec, vec_length, N, K, d_row_indices, d_row_offsets, d_col_indices, d_value, d_rhs_matrix, d_output_value);
-
-                checkCuda(cudaEventRecord(end));
-                checkCuda(cudaEventSynchronize(end));
-                checkCuda(cudaEventElapsedTime(&msec, start, end));
-                if(i >= warmup) {total_msec = total_msec + msec;}
-            }
-
-            Gperf = ((double)nnz) * N * 2 / 1000/ 1000 / total_msec * repeat;//nonzeros
-            double sp = 100.0 - ((double)nnz * 100 / M / K);
-            printf("M = %d, K = %d, N = %d, NNZ = %d, Sparsity = %lf%\n", M, K, N, nnz, sp);
-            printf("\033[33mWMMA on TC Avager Performance = \033[35m%lf\033[0m \033[33mGFlops\033[0m\n", Gperf);
-            if(record){
-                std::ofstream outFile;
-            //-------------edit here to change the output file-----------------------------
-                std::string output_dir = "./data/";
-                std::string line;
-
-                if(vec_length == 8){
-                    line = "_SSpMM_v8.csv";
-                }
-                
-                else if(vec_length == 16){
-                    line = "_SSpMM_v16.csv";
-                }
-
-                output_dir = output_dir + arch + line;
-
-                outFile.open(output_dir, std::ios::app);
-            //-----------------------------------------------------------------------------
-                outFile << nnz << ',' << N << ',' << Gperf << std::endl;
-                outFile.close();
-            }
-        }
-        else if (kernel == 2){
+        if (kernel == 2){
             printf("Using WMMA-SpMM, V = %d\n", vec_length);
             float total_msec = 0;
             double Gperf = 0;
@@ -302,7 +210,7 @@ void usage(void){
     printf("Input Format is  ./tspmm_test [paths.txt] [dimN] [vec_length] [kernel] [sort] [verify] [mixed] [reocrd]\n");
     printf("dimN: N in M-K-N\n");
     printf("veclength: {1, 2, 4, 8, 16}\n");
-    printf("kernel: {0 mma884, 1 mma1688}\n");
+    printf("kernel: {2 WMMA SpMM}\n");
     printf("sort: {0 unsorted by row_swizzle, 1 sorted by row_swizzle}\n");
     printf("func: {0 not verify result with cpu, 1: verify result}\n");
     printf("mixed: {0:fp16*fp16=fp32, 1:fp16*fp16=fp16}\n");
@@ -322,7 +230,7 @@ int main(int argc, char **argv){
     std::string paths(argv[1]);
     const int dimN = std::atoi(argv[2]);//B_cols_num
     const int vec_length = std::atoi(argv[3]);//8 16
-    const int kernel = std::atoi(argv[4]);//0:mma884 1:mma1688
+    const int kernel = std::atoi(argv[4]);//2:wmma spmm
     const int sorted = std::atoi(argv[5]);//0:unsorted 1:sorted
     const int func = std::atoi(argv[6]);//0:not verify  1:verify
     const int mixed = std::atoi(argv[7]);//0:16-16-16  1:16-16-32

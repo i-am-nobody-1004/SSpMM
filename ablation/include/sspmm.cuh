@@ -53,22 +53,22 @@ cudaError_t SSpMM(int m_vec, int vec_length, int N, int K,
     float* __restrict__ output_matrix) ;
     
 cudaError_t WMMA_SpMM(int m_vec, int vec_length, int N, int K, 
-    int* __restrict__ row_offsets,
-    int* __restrict__ column_indices,
-    half* __restrict__ values,
-    half* __restrict__ rhs_matrix,
+    const int* __restrict__ row_offsets,
+    const int* __restrict__ column_indices,
+    const half* __restrict__ values,
+    const half* __restrict__ rhs_matrix,
     half* __restrict__ output_matrix) ;
 cudaError_t WMMA_SpMM(int m_vec, int vec_length, int N, int K, 
-    int* __restrict__ row_offsets,
-    int* __restrict__ column_indices,
-    half* __restrict__ values,
-    half* __restrict__ rhs_matrix,
+    const int* __restrict__ row_offsets,
+    const int* __restrict__ column_indices,
+    const half* __restrict__ values,
+    const half* __restrict__ rhs_matrix,
     float* __restrict__ output_matrix) ;
 cudaError_t WMMA_SpMM(int m_vec, int vec_length, int N, int K, 
-    int* __restrict__ row_offsets,
-    int* __restrict__ column_indices,
-    float* __restrict__ values,
-    float* __restrict__ rhs_matrix,
+    const int* __restrict__ row_offsets,
+    const int* __restrict__ column_indices,
+    const float* __restrict__ values,
+    const float* __restrict__ rhs_matrix,
     float* __restrict__ output_matrix) ;
 } // namespace spmm
 

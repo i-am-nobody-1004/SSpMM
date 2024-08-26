@@ -1,6 +1,6 @@
-NVCC = /usr/local/cuda/bin/nvcc
+NVCC = /usr/local/cuda-11.8/bin/nvcc
 # SPUTNIK_PATH = /home/xuezeyu/sputnik
-NVCC_FLAGS = -std=c++11 -arch=sm_75 -lineinfo -lcublas -lcusparse  --ptxas-options=-v
+NVCC_FLAGS = -std=c++11 -arch=sm_75 -lineinfo -lcublas -lcusparse  --ptxas-options=-v  --compiler-options "-pipe"
 
 ##################################################################
 
@@ -16,7 +16,7 @@ OBJ_DIR = bin
 INC_DIR = include
 
 # Library directory
-LIB_DIR = /usr/local/cuda/lib64
+LIB_DIR = /usr/local/cuda-11.8/lib64
 # SPUTNIK_DIR = ${SPUTNIK_PATH}/build/sputnik
 
 #output directory
@@ -57,16 +57,16 @@ sspmm_test_run1610:
 	$(OUT_DIR)/sspmm_test ./paths.txt 512 16   1        0        0       1      0         0    turing
 sspmm_test_runsuit8:
 #####################################       [N] [v] [kernel][sort] [verify] [mixed][record][reorder][arch]
-	$(OUT_DIR)/sspmm_test ./suitpaths.txt 512  8   1        0        0       1      0         0    turing
+	$(OUT_DIR)/sspmm_test ./suitpaths.txt 512  8   1        0        0       1      0         0    turing_suit
 sspmm_test_runsuit16:
 #####################################       [N] [v] [kernel][sort] [verify] [mixed][record][reorder][arch]
-	$(OUT_DIR)/sspmm_test ./suitpaths.txt 512 16   1        0        0       1      0         0    turing
+	$(OUT_DIR)/sspmm_test ./suitpaths.txt 512 16   1        0        0       1      0         0    turing_suit
 sspmm_test_run820:
 #####################################     [N] [v] [kernel][sort] [verify] [mixed][record][reorder][arch]
-	$(OUT_DIR)/sspmm_test ./paths.txt 512  8   2        0        0       0      0         0    turing
+	$(OUT_DIR)/sspmm_test ./paths.txt 512  8   2        0        0       1      1         0    turing
 sspmm_test_run1620:
 #####################################     [N] [v] [kernel][sort] [verify] [mixed][record][reorder][arch]
-	$(OUT_DIR)/sspmm_test ./paths.txt 512 16   2        0        0       0      0         0    turing
+	$(OUT_DIR)/sspmm_test ./paths.txt 512 16   2        0        0       1      1         0    turing
 
 clean:
 	@rm -f $(OBJ_DIR)/*

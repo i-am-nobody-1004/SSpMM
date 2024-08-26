@@ -63,7 +63,7 @@ sspmm_test_runsuit16:
 	$(OUT_DIR)/sspmm_test ./suitpaths.txt 512 16   1        0        0       1      0         0    ada
 sspmm_test_run820:
 #####################################     [N] [v] [kernel][sort] [verify] [mixed][record][reorder][arch]
-	$(OUT_DIR)/sspmm_test ./paths.txt 512  8   2        0        0       1      0         0    ada
+	$(OUT_DIR)/sspmm_test ./paths.txt 64  8   2        0        0       1      0         0    ada
 sspmm_test_run1620:
 #####################################     [N] [v] [kernel][sort] [verify] [mixed][record][reorder][arch]
 	$(OUT_DIR)/sspmm_test ./paths.txt 512 16   2        0        0       1      0         0    ada
